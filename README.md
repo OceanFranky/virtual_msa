@@ -17,8 +17,8 @@ within diffusion for protein design](https://www.biorxiv.org/content/10.1101/202
 
 ## 📝 Colab Notebook
 
-[![Open Protein Hunter (Chai)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yehlincho/Protein-Hunter/blob/main/protein_hunter_chai_colab.ipynb)
-[![Open Protein Hunter (Boltz)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yehlincho/Protein-Hunter/blob/main/protein_hunter_boltz_colab.ipynb)
+[![Open Protein Hunter (Chai)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/OceanFranky/virtual_msa/blob/main/protein_hunter_chai_colab.ipynb)
+[![Open Protein Hunter (Boltz)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/OceanFranky/virtual_msa/blob/main/protein_hunter_boltz_colab.ipynb)
 
 
 ## 🚀 Quick Start
@@ -27,8 +27,8 @@ within diffusion for protein design](https://www.biorxiv.org/content/10.1101/202
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yehlincho/Protein-Hunter.git
-   cd Protein-Hunter
+   git clone https://github.com/OceanFranky/virtual_msa.git
+   cd virtual_msa
    ```
 
 2. **Run the automated setup**
@@ -50,9 +50,12 @@ The setup script will automatically:
 
 ---
 
-We have implemented two different AF3-style models in our Protein Hunter pipeline (more models will be added in the future):
-- Boltz1/2
-- Chai1
+This repository contains three AF3-style Protein Hunter backends:
+- **Boltz1/2** (`boltz_ph/`)
+- **Chai1** (`chai_ph/`)
+- **Protenix** (`Protenix_ph/`)
+
+The repository is maintained as a source-only codebase. Generated structures, trajectories, logs, model weights, databases, and plotting utilities are kept out of the Git history and must be provided separately when running the pipelines.
 
 
 ## Run Code End-to-End
@@ -133,9 +136,13 @@ To use AlphaFold3 validation, make sure your AlphaFold3 Docker is installed, spe
   python boltz_ph/design.py --num_designs 5 --num_cycles 7 --protein_seqs AFTVTVPKDLYVVEYGSNMTIECKFPVEKQLDLAALIVYWEMEDKNIIQFVHGEEDLKVQHSSYRQRARLLKDQLSLGNAALQITDVKLQDAGVYRCMISYGGADYKRITVKVNAPYAAALE --msa_mode "mmseqs" --ligand_ccd SAM --gpu_id 0 --name PDL1_SAM --min_protein_length 90 --max_protein_length 150 --high_iptm_threshold 0.8 --use_msa_for_af3 --plot
   ```
 
-### 本版本的 Boltz 改动说明（仅 Boltz，Chai 未改）
+### 本版本的后端改动说明（Boltz、Chai 与 Protenix）
 
-本仓库并非原版 Protein-Hunter，而是在原先版本的 Boltz 管线中对“设计链（binder chain，链 A）”增加了 MSA 与 template 相关能力，并引入了“无 X 时是否允许设计变动”的控制逻辑。以下内容是对代码改动的完整记录，便于后续维护与移植。
+本仓库并非原版 Protein-Hunter，而是保留了三条后端管线的本地改动。Boltz、Chai 和 Protenix 均包含针对 Protein Hunter 设计流程的修改；下面记录各后端当前的主要能力，便于后续维护和移植。
+
+**Boltz (`boltz_ph/`)**
+
+Boltz 后端对“设计链”（binder chain，链 A）增加了 MSA 与 template 相关能力，并引入了“无 X 时是否允许设计变动”的控制逻辑：
 
 **改动摘要**
 - 设计链支持 MSA 与 template（仅支持一条设计链 template）
@@ -143,24 +150,24 @@ To use AlphaFold3 validation, make sure your AlphaFold3 Docker is installed, spe
 - 新增参数控制：当输入序列无 X 时，是否固定全序列不参与设计
 
 **新增与相关参数（Boltz CLI）**
-- `--binder_msa`: 设计链 A 的 MSA（.npz）。若提供，将启用动态 MSA；同时用于提取模板序列（如果 MSA 内含模板序列）。见 [boltz_ph/design.py](file:///root/Protein-Hunter-server/boltz_ph/design.py#L83-L86)
-- `--binder_template_path`: 设计链 A 的模板结构（pdb/cif 或 PDB id），只支持单条模板。见 [boltz_ph/design.py](file:///root/Protein-Hunter-server/boltz_ph/design.py#L55-L56)
-- `--binder_template_cif_chain_id`: 设计链模板的链 ID。见 [boltz_ph/design.py](file:///root/Protein-Hunter-server/boltz_ph/design.py#L58-L59)
-- `--fix_all_if_no_x`: 当输入序列中没有 X 时，是否将整个序列固定为“不可设计”。默认 False。见 [boltz_ph/design.py](file:///root/Protein-Hunter-server/boltz_ph/design.py#L32-L33)
+- `--binder_msa`: 设计链 A 的 MSA（.npz）。若提供，将启用动态 MSA；同时用于提取模板序列（如果 MSA 内含模板序列）。见 [boltz_ph/design.py](boltz_ph/design.py#L83-L86)
+- `--binder_template_path`: 设计链 A 的模板结构（pdb/cif 或 PDB id），只支持单条模板。见 [boltz_ph/design.py](boltz_ph/design.py#L55-L56)
+- `--binder_template_cif_chain_id`: 设计链模板的链 ID。见 [boltz_ph/design.py](boltz_ph/design.py#L58-L59)
+- `--fix_all_if_no_x`: 当输入序列中没有 X 时，是否将整个序列固定为“不可设计”。默认 False。见 [boltz_ph/design.py](boltz_ph/design.py#L32-L33)
 
 **设计链 template 的注入逻辑**
-- 设计链 A 的模板通过 `binder_template_path` 加入 templates 列表，链 ID 固定为 A；仅支持单条模板路径，不支持多模板列表。实现见 [boltz_ph/pipeline.py](file:///root/Protein-Hunter-server/boltz_ph/pipeline.py#L286-L297)
+- 设计链 A 的模板通过 `binder_template_path` 加入 templates 列表，链 ID 固定为 A；仅支持单条模板路径，不支持多模板列表。实现见 [boltz_ph/pipeline.py](boltz_ph/pipeline.py#L286-L297)
 
 **设计链 MSA 的动态更新逻辑**
-- 当传入 `--binder_msa` 时，会读取 .npz，提取其中模板序列作为“冻结模板序列”。见 [boltz_ph/pipeline.py](file:///root/Protein-Hunter-server/boltz_ph/pipeline.py#L370-L384)
-- 每个 cycle 会基于当前设计链序列生成新的 A3M/NPZ，并写入 `binder_cycle_{cycle}.a3m/.npz`。见 [boltz_ph/pipeline.py](file:///root/Protein-Hunter-server/boltz_ph/pipeline.py#L386-L412)
-- 生成的新 MSA 会立即注入到 data dict 的 binder chain（链 A），用于下一次预测。见 [boltz_ph/pipeline.py](file:///root/Protein-Hunter-server/boltz_ph/pipeline.py#L362-L368) 与 [boltz_ph/pipeline.py](file:///root/Protein-Hunter-server/boltz_ph/pipeline.py#L477-L625)
+- 当传入 `--binder_msa` 时，会读取 .npz，提取其中模板序列作为“冻结模板序列”。见 [boltz_ph/pipeline.py](boltz_ph/pipeline.py#L370-L384)
+- 每个 cycle 会基于当前设计链序列生成新的 A3M/NPZ，并写入 `binder_cycle_{cycle}.a3m/.npz`。见 [boltz_ph/pipeline.py](boltz_ph/pipeline.py#L386-L412)
+- 生成的新 MSA 会立即注入到 data dict 的 binder chain（链 A），用于下一次预测。见 [boltz_ph/pipeline.py](boltz_ph/pipeline.py#L362-L368) 与 [boltz_ph/pipeline.py](boltz_ph/pipeline.py#L477-L625)
 - 若未提供 `--binder_msa`，则不会动态更新，默认使用 "empty" MSA
 
 **“无 X 是否固定序列”的控制逻辑**
 - 设计链初始序列包含 X：仅固定非 X 的位点；设计时其余位点可被 MPNN 改动
 - 设计链初始序列不含 X 且 `--fix_all_if_no_x` 为 True：固定全序列，不允许设计变动
-- 实现位于固定残基计算与 MPNN 调用处： [boltz_ph/pipeline.py](file:///root/Protein-Hunter-server/boltz_ph/pipeline.py#L460-L613)
+- 实现位于固定残基计算与 MPNN 调用处： [boltz_ph/pipeline.py](boltz_ph/pipeline.py#L460-L613)
 
 **设计链功能示例**
 - 设计链模板（仅 1 条）+ 动态 MSA：
@@ -180,6 +187,24 @@ To use AlphaFold3 validation, make sure your AlphaFold3 Docker is installed, spe
     --fix_all_if_no_x \
     --num_designs 1 --num_cycles 3 --gpu_id 0 --name fixed_seq
   ```
+
+**Chai (`chai_ph/`)**
+
+- 支持分别为 binder 和 target 指定 MSA，并选择 `empty`、`precomputed` 或 `mmseqs` 模式。
+- 支持通过 `--msa_max_seqs` 控制 MSA 深度，并支持 binder 结构模板（`--binder_template_pdb`、`--binder_template_chain`）。
+- 增加 `--fix_all_if_no_x`，用于在输入序列不含 `X` 时固定整条输入序列。
+- 增加 `--mpnn_model_type`，支持在设计流程中调用 LigandMPNN；同时保留 AlphaFold3 验证和 refiner 流程。
+
+入口文件：[chai_ph/design.py](chai_ph/design.py) 和 [chai_ph/pipeline.py](chai_ph/pipeline.py)。
+
+**Protenix (`Protenix_ph/`)**
+
+- 增加 Protein Hunter 设计入口，支持 binder、unconditional 和 cyclic 等设计模式。
+- 支持 binder/target 的 MSA、结构模板和 `--fix_all_if_no_x` 控制，并提供 MSA 深度限制参数。
+- 支持配体的 CCD、SMILES 和文件输入，以及 pocket 约束和 MPNN 设计选项。
+- 保留并维护 Protenix 的扩散模型、置信度评估、数据处理、推理 runner 和 CUDA layer norm 等核心代码。
+
+入口文件：[Protenix_ph/design.py](Protenix_ph/design.py) 和 [Protenix_ph/pipeline.py](Protenix_ph/pipeline.py)。
 
 ## Protein Hunter (Chai Edition ☕) 
 
