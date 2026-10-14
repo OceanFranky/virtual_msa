@@ -1,0 +1,91 @@
+name: proteinhunter-all
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # Core runtime
+  - python=3.11
+  - pip
+  - setuptools>=61
+  - wheel
+
+  # PyTorch stack (shared by Boltz / Chai / Protenix)
+  - pytorch=2.7.*
+  - torchvision=0.22.*
+  - torchaudio=2.7.*
+  - pytorch-cuda=12.1
+
+  # Common scientific stack
+  - numpy>=1.26,<2.0
+  - scipy>=1.13
+  - pandas>=2.2
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - biopython
+  - pyyaml
+  - requests
+  - tqdm
+  - networkx
+  - jupyterlab
+  - ipykernel
+
+  # Tooling frequently used by the three pipelines
+  - hmmer
+  - kalign2
+  - git
+  - make
+  - gcc
+  - gxx
+
+  # RDKit is required by Boltz / Chai / Protenix ligand workflows
+  - rdkit
+
+  - pip:
+      # Local editable package (Boltz main code)
+      - -e ./boltz_ph
+
+      # Chai stack (from setup.sh comments and chai_ph imports)
+      - "chai-lab @ git+https://github.com/sokrypton/chai-lab.git"
+      - gemmi>=0.6.5
+      - py3Dmol
+      - py2Dmol
+      - logmd==0.1.45
+      - ml_collections
+      - modelcif>=1.2
+      - pdbeccdutils>=1.0.0
+      - fair-esm==2.0.0
+      - dm-tree==0.1.8
+      - jaxtyping>=0.2.25
+      - pandera>=0.24
+      - antipickle==0.2.0
+      - typing_inspect
+      - beartype
+      - typeguard
+      - ihm
+      - mypy_extensions
+      - equinox
+      - wadler_lindig
+
+      # LigandMPNN runtime
+      - ProDy>=2.4.1
+
+      # Protenix runner-related deps (relaxed to avoid numpy/torch conflicts)
+      - biotite>=1.4.0
+      - scikit-learn-extra>=0.3.0
+      - optree>=0.17.0
+      - protobuf>=4
+      - icecream
+      - ipdb
+      - wandb
+
+      # Cueq / triton used in Protenix requirements
+      - cuequivariance-ops-torch-cu12>=0.8.0
+      - cuequivariance-torch>=0.8.0
+      - triton==3.3.1
+
+      # Install local Protenix code without forcing its strict pinned requirements
+      # (Protenix requirements.txt pins numpy==2.4.1, which conflicts with Boltz numpy<2.0)
+      - --no-deps -e ./Protenix_ph
